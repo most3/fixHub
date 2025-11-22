@@ -1,0 +1,16 @@
+package com.fixhub.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Configuration
+public class SecurityBeansConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // 使用 BCrypt 密码哈希，适合存储用户密码
+        return new BCryptPasswordEncoder();
+    }
+}

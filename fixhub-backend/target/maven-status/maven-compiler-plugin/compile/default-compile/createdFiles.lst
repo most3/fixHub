@@ -1,0 +1,14 @@
+com\fixhub\common\exception\DuplicateResourceException.class
+com\fixhub\user\dto\RegisterUserRequest.class
+com\fixhub\user\dto\UserResponse.class
+com\fixhub\user\repository\UserRepository.class
+com\fixhub\common\exception\GlobalExceptionHandler.class
+com\fixhub\user\controller\AuthController.class
+com\fixhub\user\model\enums\UserRole.class
+com\fixhub\user\dto\LoginResponse.class
+com\fixhub\user\service\UserService.class
+com\fixhub\common\exception\UnauthorizedException.class
+com\fixhub\user\model\User.class
+com\fixhub\user\dto\LoginRequest.class
+com\fixhub\FixHubApplication.class
+com\fixhub\config\SecurityBeansConfig.class

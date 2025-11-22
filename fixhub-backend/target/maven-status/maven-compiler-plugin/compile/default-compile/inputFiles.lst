@@ -1,0 +1,14 @@
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\dto\RegisterUserRequest.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\service\UserService.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\controller\AuthController.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\common\exception\GlobalExceptionHandler.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\repository\UserRepository.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\dto\LoginRequest.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\config\SecurityBeansConfig.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\dto\UserResponse.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\common\exception\UnauthorizedException.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\FixHubApplication.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\model\User.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\model\enums\UserRole.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\common\exception\DuplicateResourceException.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\dto\LoginResponse.java
