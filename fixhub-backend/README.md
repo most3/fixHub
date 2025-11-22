@@ -14,6 +14,16 @@
 CREATE DATABASE IF NOT EXISTS fix_hub DEFAULT CHARACTER SET utf8mb4;
 ```
 
+### 数据库初始化 (Schema Import)
+
+为了确保表结构和注释正确显示（避免乱码），请使用以下命令导入 schema：
+
+```powershell
+# 确保在 fixhub-backend 目录下执行
+# 注意：使用 --default-character-set=utf8mb4 确保中文注释正确
+cmd /c "mysql -u root -p123456 -D fix_hub --default-character-set=utf8mb4 < src/main/resources/db/schema.sql"
+```
+
 ## 配置说明
 
 默认配置位于 `src/main/resources/application.yml`，默认连接示例：
@@ -32,6 +42,18 @@ CREATE DATABASE IF NOT EXISTS fix_hub DEFAULT CHARACTER SET utf8mb4;
 cd fixhub-backend
 mvn spring-boot:run -Dspring-boot.run.profiles=dev -DskipTests
 ```
+
+## 前端 (快速体验)
+
+项目已包含一个非常轻量的前端页面，放在后端静态资源目录中。启动后端服务（上面命令），在浏览器打开：
+
+```
+http://localhost:8080/index.html
+```
+
+该页面提供登录与注册表单，表单会直接调用后端接口 `POST /api/auth/login` 和 `POST /api/auth/register`。
+
+注意：后端需在 8080 端口启动且使用相同 host，否则会遇到跨域问题（如需要跨域，请启用后端 CORS 配置）。
 
 接口说明：
 
