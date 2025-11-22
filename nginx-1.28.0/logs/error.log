@@ -1,1 +1,0 @@
-2025/11/22 15:18:32 [error] 91736#80692: *1 CreateFile() "D:\CodeLearn\fixHub\nginx-1.28.0/html/favicon.ico" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost", referrer: "http://localhost/"
