@@ -2,6 +2,9 @@ package com.fixhub.user.dto;
 
 import com.fixhub.user.model.enums.UserRole;
 
+/**
+ * 登录成功后返回给前端的简要信息。
+ */
 public class LoginResponse {
 
     private Long userId;
@@ -14,7 +17,7 @@ public class LoginResponse {
         response.setUserId(userId);
         response.setUsername(username);
         response.setRole(role);
-        response.setMessage("Login successful");
+        response.setMessage("登录成功");
         return response;
     }
 

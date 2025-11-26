@@ -28,12 +28,18 @@ public class AuthController {
         this.userService = userService;
     }
 
+    /**
+     * 用户注册接口。
+     */
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
         UserResponse response = userService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /**
+     * 用户登录接口。
+     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = userService.login(request);

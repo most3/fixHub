@@ -13,6 +13,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * 用户领域服务，负责注册与登录等基础账户能力。
+ */
 @Service
 public class UserService {
 
@@ -30,11 +33,14 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * 注册新用户并写入加密后的密码。
+     */
     @Transactional
     public UserResponse register(RegisterUserRequest request) {
         String normalizedUsername = request.getUsername().trim();
         if (userRepository.existsByUsernameIgnoreCase(normalizedUsername)) {
-            throw new DuplicateResourceException("Username already exists");
+            throw new DuplicateResourceException("用户名已存在");
         }
         User user = new User();
         user.setUsername(normalizedUsername);
@@ -45,11 +51,14 @@ public class UserService {
         return UserResponse.fromEntity(saved);
     }
 
+    /**
+     * 校验用户名与密码是否匹配，成功后返回登录结果。
+     */
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByUsernameIgnoreCase(request.getUsername())
-                .orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
+                .orElseThrow(() -> new UnauthorizedException("用户名或密码不正确"));
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new UnauthorizedException("Invalid username or password");
+            throw new UnauthorizedException("用户名或密码不正确");
         }
         return LoginResponse.success(user.getId(), user.getUsername(), user.getRole());
     }

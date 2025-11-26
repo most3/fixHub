@@ -1,5 +1,8 @@
 package com.fixhub.statistics.dto;
 
+/**
+ * 仪表盘展示的核心统计指标。
+ */
 public class DashboardStats {
 
     private long totalOrders;

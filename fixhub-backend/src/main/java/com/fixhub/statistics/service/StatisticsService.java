@@ -9,6 +9,9 @@ import com.fixhub.statistics.dto.DashboardStats;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
+/**
+ * 统计服务，用于汇总仪表盘展示所需的基础指标。
+ */
 @Service
 public class StatisticsService {
 
@@ -20,6 +23,9 @@ public class StatisticsService {
         this.commentRepository = commentRepository;
     }
 
+    /**
+     * 汇总工单数量及满意度评分平均值。
+     */
     public DashboardStats getDashboardStats() {
         List<RepairOrder> allOrders = orderRepository.findAll();
         long total = allOrders.size();

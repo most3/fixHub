@@ -2,16 +2,19 @@ package com.fixhub.repair.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * 创建报修单的请求参数。
+ */
 public class CreateOrderRequest {
 
     private Long deviceId;
 
     private String deviceName;
 
-    @NotBlank
+    @NotBlank(message = "报修地点不能为空")
     private String location;
 
-    @NotBlank
+    @NotBlank(message = "故障描述不能为空")
     private String description;
 
     private String imageUrl;
