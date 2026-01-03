@@ -1,6 +1,4 @@
-import axios from 'axios'
-
-const client = axios.create({ baseURL: '/', timeout: 5000 })
+import client from './client'
 
 export async function login (username, password) {
   const res = await client.post('/api/auth/login', { username, password })
@@ -13,8 +11,6 @@ export async function register (payload) {
 }
 
 export async function me () {
-  const token = localStorage.getItem('fixhub_token')
-  if (!token) return null
-  const res = await client.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+  const res = await client.get('/api/auth/me')
   return res.data
 }

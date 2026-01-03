@@ -1,356 +1,514 @@
 <template>
-  <div class="home">
-    <main class="home-body" v-if="currentSection">
-      <section class="content">
-        <header class="content-header">
-          <h2>{{ currentSection.title }}</h2>
-          <p class="description">{{ currentSection.description }}</p>
-          <div class="actions">
-            <el-button type="primary" size="large" @click="handleAction(currentSection)">
-              {{ currentSection.actionText }}
-            </el-button>
-            <el-button size="large" plain @click="showHint(currentSection)">
-              操作指引
-            </el-button>
+  <div class="home-container">
+    <!-- 报修用户（师生）首页 -->
+    <div v-if="isReporter" class="role-dashboard reporter-dashboard">
+      <!-- 顶部：快速报修 -->
+      <el-row :gutter="20" class="mb-4">
+        <el-col :span="24">
+          <el-card shadow="hover" class="quick-action-card" @click="handleQuickRepair">
+            <div class="card-content">
+              <el-icon :size="40" color="#409EFF"><Tools /></el-icon>
+              <div class="text-info">
+                <h3>一键提交报修单</h3>
+                <p>设备故障？点击这里快速提交报修申请</p>
+              </div>
+              <el-icon :size="24" class="arrow-icon"><ArrowRight /></el-icon>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+
+      <!-- 中部：我的报修单 -->
+      <el-card class="box-card mb-4">
+        <template #header>
+          <div class="card-header">
+            <span>我的报修单</span>
+            <el-button text @click="fetchMyOrders">刷新</el-button>
           </div>
-        </header>
+        </template>
+        <el-table :data="myOrders" style="width: 100%" v-loading="loading">
+          <el-table-column prop="orderNo" label="报修单号" width="180" />
+          <el-table-column prop="deviceName" label="设备名称" />
+          <el-table-column prop="location" label="位置" />
+          <el-table-column prop="createdAt" label="提交时间" width="180">
+            <template #default="scope">{{ formatDate(scope.row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column prop="status" label="状态" width="100">
+            <template #default="scope">
+              <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="120">
+            <template #default="scope">
+              <el-button link type="primary" size="small" @click="viewDetail(scope.row)">查看详情</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
 
-        <section class="highlights" v-if="currentSection.highlights?.length">
-          <article class="highlight-card" v-for="item in currentSection.highlights" :key="item.title">
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.desc }}</p>
-          </article>
-        </section>
+      <!-- 底部：常见问题 -->
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-card class="box-card">
+            <template #header><span>常见问题</span></template>
+            <ul class="faq-list">
+              <li>报修后多久受理？</li>
+              <li>如何查询设备编号？</li>
+              <li>维修完成后如何评价？</li>
+            </ul>
+          </el-card>
+        </el-col>
+        <el-col :span="12">
+          <el-card class="box-card" shadow="hover" @click="handleDeviceQuery">
+            <div class="simple-card-content">
+              <el-icon><Search /></el-icon>
+              <span>学校公共设备名录查询</span>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
 
-        <section class="steps" v-if="currentSection.steps?.length">
-          <h3>操作流程</h3>
-          <ol>
-            <li v-for="(step, index) in currentSection.steps" :key="index">
-              <span class="index">{{ index + 1 }}</span>
-              <span class="text">{{ step }}</span>
-            </li>
-          </ol>
-        </section>
+    <!-- 维修工首页 -->
+    <div v-if="isTechnician" class="role-dashboard technician-dashboard">
+      <!-- 顶部：统计看板 -->
+      <el-row :gutter="20" class="mb-4">
+        <el-col :span="8">
+          <el-card shadow="hover" class="stat-card red">
+            <div class="stat-value">{{ stats.pendingOrders || 0 }}</div>
+            <div class="stat-label">今日待接单</div>
+          </el-card>
+        </el-col>
+        <el-col :span="8">
+          <el-card shadow="hover" class="stat-card yellow">
+            <div class="stat-value">{{ assignedOrders.length }}</div> <!-- 暂用列表长度代替 -->
+            <div class="stat-label">处理中工单</div>
+          </el-card>
+        </el-col>
+        <el-col :span="8">
+          <el-card shadow="hover" class="stat-card green">
+            <div class="stat-value">{{ stats.completedOrders || 0 }}</div>
+            <div class="stat-label">今日完成数</div>
+          </el-card>
+        </el-col>
+      </el-row>
 
-        <section class="tips" v-if="currentSection.tips?.length">
-          <h3>贴心提示</h3>
-          <ul>
-            <li v-for="tip in currentSection.tips" :key="tip">{{ tip }}</li>
-          </ul>
-        </section>
-      </section>
-    </main>
+      <!-- 中部：待接单（模拟数据，因为API没提供专门的待接单接口，暂时用所有Pending状态的） -->
+      <el-card class="box-card mb-4">
+        <template #header>
+          <div class="card-header">
+            <span>待接单工单</span>
+            <el-button text @click="fetchPendingOrders">刷新</el-button>
+          </div>
+        </template>
+        <el-table :data="pendingOrders" style="width: 100%" v-loading="loading">
+          <el-table-column prop="orderNo" label="报修单号" width="150" />
+          <el-table-column prop="deviceName" label="设备名称" />
+          <el-table-column prop="description" label="故障描述" />
+          <el-table-column prop="createdAt" label="提交时间" width="180">
+            <template #default="scope">{{ formatDate(scope.row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="120">
+            <template #default="scope">
+              <el-button type="primary" size="small" @click="handleAccept(scope.row)">接单</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+
+      <!-- 中下部：处理中 -->
+      <el-card class="box-card">
+        <template #header><span>处理中工单</span></template>
+        <el-table :data="assignedOrders" style="width: 100%" v-loading="loading">
+          <el-table-column prop="orderNo" label="报修单号" width="150" />
+          <el-table-column prop="deviceName" label="设备名称" />
+          <el-table-column prop="assignedAt" label="开始处理时间" width="180">
+            <template #default="scope">{{ formatDate(scope.row.assignedAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="150">
+            <template #default="scope">
+              <el-button type="success" size="small" @click="handleComplete(scope.row)">填写处理结果</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </div>
+
+    <!-- 管理员首页 -->
+    <div v-if="isAdmin" class="role-dashboard admin-dashboard">
+      <!-- 顶部：数据看板 -->
+      <el-row :gutter="20" class="mb-4">
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-value">{{ stats.totalOrders || 0 }}</div>
+            <div class="stat-label">今日报修总量</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-value">{{ stats.pendingOrders || 0 }}</div>
+            <div class="stat-label">待派单工单</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-value">{{ stats.completedOrders || 0 }}</div>
+            <div class="stat-label">今日完成工单</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-value">{{ stats.averageRating || 0 }}</div>
+            <div class="stat-label">平均响应时间(h)</div>
+          </el-card>
+        </el-col>
+      </el-row>
+
+      <!-- 中部：待派单 -->
+      <el-card class="box-card mb-4">
+        <template #header>
+          <div class="card-header">
+            <span>待派单工单</span>
+            <el-button text @click="fetchPendingOrders">刷新</el-button>
+          </div>
+        </template>
+        <el-table :data="pendingOrders" style="width: 100%" v-loading="loading">
+          <el-table-column prop="orderNo" label="报修单号" width="150" />
+          <el-table-column prop="deviceName" label="设备名称" />
+          <el-table-column prop="reporter.displayName" label="报修人" />
+          <el-table-column prop="location" label="位置" />
+          <el-table-column label="操作" width="120">
+            <template #default="scope">
+              <el-button type="warning" size="small" @click="handleAssign(scope.row)">派单</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+
+      <!-- 底部：快捷管理 -->
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <el-card shadow="hover" class="manage-card">设备管理</el-card>
+        </el-col>
+        <el-col :span="8">
+          <el-card shadow="hover" class="manage-card">人员管理</el-card>
+        </el-col>
+        <el-col :span="8">
+          <el-card shadow="hover" class="manage-card">账号生成</el-card>
+        </el-col>
+      </el-row>
+    </div>
+
+    <!-- 弹窗：快速报修 -->
+    <el-dialog v-model="repairDialogVisible" title="提交报修单" width="500px">
+      <el-form :model="repairForm" label-width="80px">
+        <el-form-item label="设备名称">
+          <el-input v-model="repairForm.deviceName" placeholder="请输入设备名称" />
+        </el-form-item>
+        <el-form-item label="设备位置">
+          <el-input v-model="repairForm.location" placeholder="请输入设备位置" />
+        </el-form-item>
+        <el-form-item label="故障描述">
+          <el-input v-model="repairForm.description" type="textarea" placeholder="请详细描述故障情况" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="repairDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitRepair">提交</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗：处理结果 -->
+    <el-dialog v-model="completeDialogVisible" title="填写处理结果" width="500px">
+      <el-form :model="completeForm" label-width="80px">
+        <el-form-item label="处理结果">
+          <el-input v-model="completeForm.resultDesc" type="textarea" placeholder="请描述维修结果" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="completeDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitComplete">提交</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Tools, ArrowRight, Search } from '@element-plus/icons-vue'
 import useAuth from '../composables/useAuth'
+import { createOrder, getMyOrders, getAssignedOrders, getAllOrders, assignOrder, completeOrder } from '../api/repair'
+import { getDashboardStats } from '../api/stats'
 
-const router = useRouter()
-const route = useRoute()
+const { user } = useAuth()
+const loading = ref(false)
 
-const sections = [
-  {
-    id: 'report',
-    label: '报修',
-    title: '在线报修',
-    description: '快速提交设备故障信息，支持地点、描述、图片等多种附加信息，管理员可第一时间接收并派单。',
-    highlights: [
-      { title: '多渠道采集', desc: '支持手动选择设备或直接填写设备名称，避免信息缺失。' },
-      { title: '实时通知', desc: '提交后自动通知管理员和维修工，全程保留消息记录。' }
-    ],
-    steps: [
-      '填写报修信息并上传故障图片',
-      '提交后等待管理员审核派单',
-      '在仪表盘中实时查看处理进度'
-    ],
-    tips: [
-      '如遇紧急情况，可在备注中说明优先级。',
-      '上传清晰照片有助于维修工提前判断故障。'
-    ],
-    actionText: '立即创建报修单',
-    requiresAuth: true,
-    target: '/dashboard'
-  },
-  {
-    id: 'tracking',
-    label: '状态跟踪',
-    title: '工单状态跟踪',
-    description: '随时掌握报修单的受理、派工、维修、评价全流程状态，关键时间节点一目了然。',
-    highlights: [
-      { title: '时间轴视图', desc: '按照时间顺序展示工单进度，追踪节点更简单。' },
-      { title: '消息提醒', desc: '状态变更自动提醒，避免错过维修反馈。' }
-    ],
-    steps: [
-      '登录后进入仪表盘工单列表',
-      '选择需要查看的工单了解最新状态',
-      '对完成的工单进行确认或评价'
-    ],
-    tips: [
-      '工单状态包含待受理、处理中、待评价、已完成。',
-      '如长时间未更新，可联系管理员协调。'
-    ],
-    actionText: '前往查看进度',
-    requiresAuth: true,
-    target: '/dashboard'
-  },
-  {
-    id: 'device',
-    label: '设备',
-    title: '设备资产管理',
-    description: '集中管理校园公共设备，支持录入设备档案、维护状态和位置，帮助管理员掌握资产健康度。',
-    highlights: [
-      { title: '完整档案', desc: '记录设备型号、位置、采购时间等关键信息。' },
-      { title: '状态更新', desc: '设备状态随报修及时更新，方便制定维护计划。' }
-    ],
-    steps: [
-      '管理员登录后进入设备管理模块',
-      '新增或编辑设备信息，维护资产档案',
-      '结合报修记录评估设备健康状况'
-    ],
-    tips: [
-      '建议按楼栋或功能分组管理设备，便于快速检索。'
-    ],
-    actionText: '维护设备档案',
-    requiresAuth: true,
-    target: '/dashboard'
-  },
-  {
-    id: 'stats',
-    label: '数据统计',
-    title: '数据看板',
-    description: '汇总维修量、响应时长、满意度等关键指标，为管理者提供决策依据，提升维修服务质量。',
-    highlights: [
-      { title: '多维统计', desc: '按时间、部门、设备类型等维度查看维修数据。' },
-      { title: '趋势洞察', desc: '识别高频故障设备和薄弱环节，优化资源投入。' }
-    ],
-    steps: [
-      '登录后打开仪表盘数据看板',
-      '选择时间范围或筛选条件查看图表',
-      '导出数据或制定维护计划'
-    ],
-    tips: [
-      '定期回顾统计数据，有助于提前规划检修计划。'
-    ],
-    actionText: '查看统计报表',
-    requiresAuth: true,
-    target: '/dashboard'
-  }
-]
+// 角色判断
+const isReporter = computed(() => user.value?.role === 'REPORTER')
+const isTechnician = computed(() => user.value?.role === 'TECHNICIAN')
+const isAdmin = computed(() => user.value?.role === 'ADMIN')
 
-const activeSection = ref(sections[0].id)
-const { isAuthenticated } = useAuth()
+// 数据
+const myOrders = ref([])
+const pendingOrders = ref([])
+const assignedOrders = ref([])
+const stats = ref({})
 
-const currentSection = computed(() => sections.find(item => item.id === activeSection.value))
+// 表单
+const repairDialogVisible = ref(false)
+const repairForm = ref({ deviceName: '', location: '', description: '' })
 
-// sync activeSection with route query `section` so top bar can control it
+const completeDialogVisible = ref(false)
+const currentOrder = ref(null)
+const completeForm = ref({ resultDesc: '' })
+
+// 初始化加载
 onMounted(() => {
-  const q = route.query.section
-  if (q) activeSection.value = q
+  loadData()
 })
 
-watch(
-  () => route.query.section,
-  (val) => {
-    if (val) activeSection.value = val
+async function loadData() {
+  loading.value = true
+  try {
+    if (isReporter.value) {
+      await fetchMyOrders()
+    } else if (isTechnician.value) {
+      await fetchTechnicianData()
+    } else if (isAdmin.value) {
+      await fetchAdminData()
+    }
+  } catch (e) {
+    console.error(e)
+    ElMessage.error('数据加载失败')
+  } finally {
+    loading.value = false
   }
-)
-
-function handleAction (section) {
-  if (section.requiresAuth && !isAuthenticated.value) {
-    ElMessage.info('请先登录后使用该功能')
-    router.push('/login')
-    return
-  }
-  if (section.target) {
-    router.push(section.target)
-    return
-  }
-  ElMessage.info('功能即将上线')
 }
 
-function showHint (section) {
-  const hint = section.tips?.[0] || '请在登录后按照页面指引操作'
-  ElMessage.info(hint)
+async function fetchMyOrders() {
+  if (user.value?.id) {
+    myOrders.value = await getMyOrders(user.value.id)
+  }
 }
 
+async function fetchTechnicianData() {
+  if (user.value?.id) {
+    assignedOrders.value = await getAssignedOrders(user.value.id)
+    // 模拟获取待接单（实际应有专门接口，这里取所有Pending的演示）
+    const all = await getAllOrders()
+    pendingOrders.value = all.filter(o => o.status === 'PENDING')
+    
+    // 获取统计
+    try {
+      stats.value = await getDashboardStats()
+    } catch (e) { /* ignore */ }
+  }
+}
+
+async function fetchAdminData() {
+  const all = await getAllOrders()
+  pendingOrders.value = all.filter(o => o.status === 'PENDING')
+  try {
+    stats.value = await getDashboardStats()
+  } catch (e) { /* ignore */ }
+}
+
+// 报修用户操作
+function handleQuickRepair() {
+  repairDialogVisible.value = true
+}
+
+async function submitRepair() {
+  try {
+    await createOrder(user.value.id, repairForm.value)
+    ElMessage.success('报修提交成功')
+    repairDialogVisible.value = false
+    repairForm.value = { deviceName: '', location: '', description: '' }
+    fetchMyOrders()
+  } catch (e) {
+    ElMessage.error('提交失败')
+  }
+}
+
+function handleDeviceQuery() {
+  ElMessage.info('功能开发中...')
+}
+
+// 维修工操作
+async function handleAccept(order) {
+  try {
+    await ElMessageBox.confirm('确认接单吗？', '提示', { type: 'info' })
+    await assignOrder(order.id, user.value.id)
+    ElMessage.success('接单成功')
+    loadData()
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error('接单失败')
+  }
+}
+
+function handleComplete(order) {
+  currentOrder.value = order
+  completeDialogVisible.value = true
+}
+
+async function submitComplete() {
+  try {
+    await completeOrder(currentOrder.value.id, user.value.id, completeForm.value.resultDesc)
+    ElMessage.success('工单已完成')
+    completeDialogVisible.value = false
+    completeForm.value = { resultDesc: '' }
+    loadData()
+  } catch (e) {
+    ElMessage.error('操作失败')
+  }
+}
+
+// 管理员操作
+function handleAssign(order) {
+  ElMessage.info('请使用维修工账号登录演示接单，或后续完善派单弹窗')
+}
+
+// 工具函数
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleString()
+}
+
+function getStatusText(status) {
+  const map = {
+    'PENDING': '待受理',
+    'ASSIGNED': '处理中',
+    'REPAIRED': '待确认',
+    'CLOSED': '已完成'
+  }
+  return map[status] || status
+}
+
+function getStatusType(status) {
+  const map = {
+    'PENDING': 'primary',
+    'ASSIGNED': 'warning',
+    'REPAIRED': 'success',
+    'CLOSED': 'info'
+  }
+  return map[status] || ''
+}
+
+function viewDetail(row) {
+  ElMessage.info(`查看详情: ${row.orderNo}`)
+}
+
+// 刷新待接单
+async function fetchPendingOrders() {
+  const all = await getAllOrders()
+  pendingOrders.value = all.filter(o => o.status === 'PENDING')
+}
 </script>
 
 <style scoped>
-.home {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: #f4f6fb;
-}
-
-.nav { display: none }
-
-.nav-item {
-  padding: 10px 26px;
-  border: 1px solid #d8dae2;
-  border-radius: 10px;
-  background: #ffffff;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.2s ease;
-}
-
-.nav-item:hover {
-  border-color: #5c86ff;
-  color: #5c86ff;
-}
-
-.nav-item.active {
-  border-color: #2c64ff;
-  background: #2c64ff;
-  color: #ffffff;
-  box-shadow: 0 6px 18px rgba(44, 100, 255, 0.18);
-}
-
-.home-body {
-  flex: 1;
-  padding: 48px 40px 80px;
-  display: flex;
-  justify-content: center;
-}
-
-.content {
-  width: 100%;
-  max-width: 1080px;
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 36px 40px;
-  box-shadow: 0 16px 60px rgba(31, 47, 86, 0.08);
-}
-
-.content-header h2 {
-  font-size: 28px;
-  margin-bottom: 12px;
-  color: #1f2f56;
-}
-
-.description {
-  color: #61657a;
-  line-height: 1.7;
-  margin-bottom: 28px;
-}
-
-.actions {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.highlights {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 36px;
-}
-
-.highlight-card {
+.home-container {
   padding: 20px;
-  border-radius: 14px;
-  border: 1px solid #e3e6f0;
-  background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.highlight-card h3 {
-  margin-bottom: 10px;
-  color: #2c64ff;
-  font-size: 18px;
+.mb-4 {
+  margin-bottom: 20px;
 }
 
-.highlight-card p {
-  color: #555a6e;
-  line-height: 1.6;
+/* 快速报修卡片 */
+.quick-action-card {
+  cursor: pointer;
+  transition: all 0.3s;
+  background: linear-gradient(135deg, #e6f7ff 0%, #ffffff 100%);
 }
-
-.steps h3,
-.tips h3 {
-  font-size: 20px;
-  margin-bottom: 16px;
-  color: #1f2f56;
+.quick-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-
-.steps ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 16px;
-}
-
-.steps li {
+.card-content {
   display: flex;
   align-items: center;
-  background: #f4f6fb;
-  padding: 14px 18px;
-  border-radius: 12px;
-  border: 1px solid #e2e6f4;
+  padding: 10px;
+}
+.text-info {
+  flex: 1;
+  margin-left: 20px;
+}
+.text-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+  color: #303133;
+}
+.text-info p {
+  margin: 0;
+  color: #909399;
 }
 
-.steps .index {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #2c64ff;
-  color: #ffffff;
+/* 统计卡片 */
+.stat-card {
+  text-align: center;
+  padding: 10px 0;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.stat-label {
+  color: #909399;
+  font-size: 14px;
+}
+.stat-card.red .stat-value { color: #F56C6C; }
+.stat-card.yellow .stat-value { color: #E6A23C; }
+.stat-card.green .stat-value { color: #67C23A; }
+
+/* 常见问题 */
+.faq-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.faq-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #EBEEF5;
+  color: #606266;
+  cursor: pointer;
+}
+.faq-list li:hover {
+  color: #409EFF;
+}
+
+.simple-card-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  margin-right: 12px;
+  height: 100px;
+  font-size: 16px;
+  color: #606266;
+  gap: 10px;
 }
 
-.steps .text {
-  color: #44495c;
+.manage-card {
+  text-align: center;
+  padding: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #303133;
+}
+.manage-card:hover {
+  color: #409EFF;
+  background-color: #f5f7fa;
 }
 
-.tips ul {
-  margin: 0;
-  padding-left: 20px;
-  color: #5a5f74;
-  line-height: 1.6;
-}
-
-@media (max-width: 960px) {
-  .home-header {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px 24px;
-  }
-
-  .nav {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .actions {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 600px) {
-  .home-header {
-    padding: 20px;
-  }
-
-  .home-body {
-    padding: 20px 16px 60px;
-  }
-
-  .content {
-    padding: 24px 20px;
-  }
-
-  .nav-item {
-    padding: 8px 18px;
-  }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>
