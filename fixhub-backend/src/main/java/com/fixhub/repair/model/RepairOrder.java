@@ -43,10 +43,10 @@ public class RepairOrder {
     private Instant closedAt;
 
     public enum OrderStatus {
-        PENDING,    // 待受理
-        ASSIGNED,   // 已派单/处理中
-        REPAIRED,   // 维修完成/待确认
-        CLOSED      // 已关闭/已评价
+        PENDING, // 待受理
+        ASSIGNED, // 已派单/处理中
+        REPAIRED, // 维修完成/待确认
+        CLOSED // 已关闭/已评价
     }
 
 }

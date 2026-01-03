@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && powershell -NoProfile -Command \"Remove-Item -Recurse -Force ../fixhub-backend/src/main/resources/static/* -ErrorAction SilentlyContinue; Copy-Item -Path dist/* -Destination ../fixhub-backend/src/main/resources/static -Recurse -Force\""
   },
   "dependencies": {
     "axios": "^1.4.0",

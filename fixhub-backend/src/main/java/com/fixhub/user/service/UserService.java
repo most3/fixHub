@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * 用户领域服务，负责注册与登录等基础账户能力。
+ * 负责注册与登录等基础账户能力。
  */
 @Service
 public class UserService {

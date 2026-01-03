@@ -1,148 +1,356 @@
 <template>
   <div class="home">
-    <section class="hero">
-      <h1>FixHub 校园设备报修与维护平台</h1>
-      <p class="subtitle">覆盖报修、派工、维修、评价全流程，让校园设备维护更高效透明。</p>
-      <div class="hero-buttons">
-        <el-button type="primary" size="large" @click="go('/login')">立即登录</el-button>
-        <el-button size="large" @click="go('/register')">注册账号</el-button>
-      </div>
-    </section>
+    <main class="home-body" v-if="currentSection">
+      <section class="content">
+        <header class="content-header">
+          <h2>{{ currentSection.title }}</h2>
+          <p class="description">{{ currentSection.description }}</p>
+          <div class="actions">
+            <el-button type="primary" size="large" @click="handleAction(currentSection)">
+              {{ currentSection.actionText }}
+            </el-button>
+            <el-button size="large" plain @click="showHint(currentSection)">
+              操作指引
+            </el-button>
+          </div>
+        </header>
 
-    <section class="section" id="roles">
-      <h2>角色职能</h2>
-      <el-row :gutter="20">
-        <el-col :xs="24" :sm="12" :md="8" v-for="role in roles" :key="role.title">
-          <el-card shadow="hover" class="card">
-            <h3>{{ role.title }}</h3>
-            <p>{{ role.desc }}</p>
-            <el-button type="primary" plain @click="hint(role.hint)">{{ role.button }}</el-button>
-          </el-card>
-        </el-col>
-      </el-row>
-    </section>
+        <section class="highlights" v-if="currentSection.highlights?.length">
+          <article class="highlight-card" v-for="item in currentSection.highlights" :key="item.title">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.desc }}</p>
+          </article>
+        </section>
 
-    <section class="section" id="features">
-      <h2>平台特色</h2>
-      <el-row :gutter="20">
-        <el-col :xs="24" :sm="12" :md="8" v-for="feature in features" :key="feature.title">
-          <el-card shadow="never" class="card">
-            <h3>{{ feature.title }}</h3>
-            <p>{{ feature.desc }}</p>
-            <el-button type="primary" link @click="hint(feature.hint)">{{ feature.button }}</el-button>
-          </el-card>
-        </el-col>
-      </el-row>
-    </section>
+        <section class="steps" v-if="currentSection.steps?.length">
+          <h3>操作流程</h3>
+          <ol>
+            <li v-for="(step, index) in currentSection.steps" :key="index">
+              <span class="index">{{ index + 1 }}</span>
+              <span class="text">{{ step }}</span>
+            </li>
+          </ol>
+        </section>
 
-    <section class="section" id="workflow">
-      <h2>报修流程</h2>
-      <div class="steps">
-        <div class="step" v-for="(step, index) in steps" :key="step">
-          <div class="step-index">{{ index + 1 }}</div>
-          <div class="step-text">{{ step }}</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section cta">
-      <h2>马上开启高效的设备维护协作</h2>
-      <p>登录后即可体验数据实时同步、流程透明的报修平台。</p>
-      <div class="cta-buttons">
-        <el-button type="primary" size="large" @click="go('/login')">我要登录</el-button>
-        <el-button size="large" plain @click="go('/register')">我是新用户</el-button>
-      </div>
-    </section>
+        <section class="tips" v-if="currentSection.tips?.length">
+          <h3>贴心提示</h3>
+          <ul>
+            <li v-for="tip in currentSection.tips" :key="tip">{{ tip }}</li>
+          </ul>
+        </section>
+      </section>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { onMounted, ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import useAuth from '../composables/useAuth'
 
 const router = useRouter()
+const route = useRoute()
 
-const roles = [
+const sections = [
   {
-    title: '报修用户',
-    desc: '在线提交报修单，记录设备信息、故障描述及现场照片，可随时查看处理进度和历史记录。',
-    button: '在线报修',
-    hint: '请先登录后在仪表盘提交新的报修单。'
+    id: 'report',
+    label: '报修',
+    title: '在线报修',
+    description: '快速提交设备故障信息，支持地点、描述、图片等多种附加信息，管理员可第一时间接收并派单。',
+    highlights: [
+      { title: '多渠道采集', desc: '支持手动选择设备或直接填写设备名称，避免信息缺失。' },
+      { title: '实时通知', desc: '提交后自动通知管理员和维修工，全程保留消息记录。' }
+    ],
+    steps: [
+      '填写报修信息并上传故障图片',
+      '提交后等待管理员审核派单',
+      '在仪表盘中实时查看处理进度'
+    ],
+    tips: [
+      '如遇紧急情况，可在备注中说明优先级。',
+      '上传清晰照片有助于维修工提前判断故障。'
+    ],
+    actionText: '立即创建报修单',
+    requiresAuth: true,
+    target: '/dashboard'
   },
   {
-    title: '维修工',
-    desc: '接收管理员派发的工单，处理并反馈维修结果，系统自动记录响应时间与处理质量。',
-    button: '查看派工',
-    hint: '登录后可在任务列表查看派工详情。'
+    id: 'tracking',
+    label: '状态跟踪',
+    title: '工单状态跟踪',
+    description: '随时掌握报修单的受理、派工、维修、评价全流程状态，关键时间节点一目了然。',
+    highlights: [
+      { title: '时间轴视图', desc: '按照时间顺序展示工单进度，追踪节点更简单。' },
+      { title: '消息提醒', desc: '状态变更自动提醒，避免错过维修反馈。' }
+    ],
+    steps: [
+      '登录后进入仪表盘工单列表',
+      '选择需要查看的工单了解最新状态',
+      '对完成的工单进行确认或评价'
+    ],
+    tips: [
+      '工单状态包含待受理、处理中、待评价、已完成。',
+      '如长时间未更新，可联系管理员协调。'
+    ],
+    actionText: '前往查看进度',
+    requiresAuth: true,
+    target: '/dashboard'
   },
   {
-    title: '管理员',
-    desc: '维护设备档案，指派维修任务，掌握维修状态与统计数据，确保流程透明。',
-    button: '进入管理台',
-    hint: '管理员登录后可在后台完成派单和统计分析。'
-  }
-]
-
-const features = [
-  {
-    title: '一站式报修',
-    desc: '报修单支持文字与图片描述，流程节点自动通知，减少线下沟通成本。',
-    button: '了解报修流程',
-    hint: '具体流程可在登录后于仪表盘查看。'
+    id: 'device',
+    label: '设备',
+    title: '设备资产管理',
+    description: '集中管理校园公共设备，支持录入设备档案、维护状态和位置，帮助管理员掌握资产健康度。',
+    highlights: [
+      { title: '完整档案', desc: '记录设备型号、位置、采购时间等关键信息。' },
+      { title: '状态更新', desc: '设备状态随报修及时更新，方便制定维护计划。' }
+    ],
+    steps: [
+      '管理员登录后进入设备管理模块',
+      '新增或编辑设备信息，维护资产档案',
+      '结合报修记录评估设备健康状况'
+    ],
+    tips: [
+      '建议按楼栋或功能分组管理设备，便于快速检索。'
+    ],
+    actionText: '维护设备档案',
+    requiresAuth: true,
+    target: '/dashboard'
   },
   {
-    title: '高效派单',
-    desc: '管理员按设备类型或区域快速派发任务，维修工实时接收并反馈。',
-    button: '查看派单示例',
-    hint: '登录管理员账号即可体验派单功能。'
-  },
-  {
+    id: 'stats',
+    label: '数据统计',
     title: '数据看板',
-    desc: '直观呈现维修量、响应时长、用户满意度等指标，辅助优化管理策略。',
-    button: '预览数据看板',
-    hint: '数据看板将在登录后展示实时统计信息。'
+    description: '汇总维修量、响应时长、满意度等关键指标，为管理者提供决策依据，提升维修服务质量。',
+    highlights: [
+      { title: '多维统计', desc: '按时间、部门、设备类型等维度查看维修数据。' },
+      { title: '趋势洞察', desc: '识别高频故障设备和薄弱环节，优化资源投入。' }
+    ],
+    steps: [
+      '登录后打开仪表盘数据看板',
+      '选择时间范围或筛选条件查看图表',
+      '导出数据或制定维护计划'
+    ],
+    tips: [
+      '定期回顾统计数据，有助于提前规划检修计划。'
+    ],
+    actionText: '查看统计报表',
+    requiresAuth: true,
+    target: '/dashboard'
   }
 ]
 
-const steps = [
-  '报修用户提交设备故障信息与图片',
-  '管理员审核并指派合适的维修工',
-  '维修工处理工单并填写处理结果',
-  '用户确认维修效果后进行评价',
-  '系统归档数据，纳入看板统计'
-]
+const activeSection = ref(sections[0].id)
+const { isAuthenticated } = useAuth()
 
-function go (path) {
-  router.push(path)
+const currentSection = computed(() => sections.find(item => item.id === activeSection.value))
+
+// sync activeSection with route query `section` so top bar can control it
+onMounted(() => {
+  const q = route.query.section
+  if (q) activeSection.value = q
+})
+
+watch(
+  () => route.query.section,
+  (val) => {
+    if (val) activeSection.value = val
+  }
+)
+
+function handleAction (section) {
+  if (section.requiresAuth && !isAuthenticated.value) {
+    ElMessage.info('请先登录后使用该功能')
+    router.push('/login')
+    return
+  }
+  if (section.target) {
+    router.push(section.target)
+    return
+  }
+  ElMessage.info('功能即将上线')
 }
 
-function hint (message) {
-  ElMessage.info(message)
+function showHint (section) {
+  const hint = section.tips?.[0] || '请在登录后按照页面指引操作'
+  ElMessage.info(hint)
 }
+
 </script>
 
 <style scoped>
-.home { padding: 48px 24px 80px; background: #f7f8fa; }
-.hero { text-align: center; max-width: 720px; margin: 0 auto 60px; }
-.hero h1 { font-size: 2.8rem; margin-bottom: 16px; }
-.subtitle { color: #606266; font-size: 1.1rem; margin-bottom: 28px; line-height: 1.6; }
-.hero-buttons { display: flex; justify-content: center; gap: 16px; }
-.section { max-width: 1080px; margin: 0 auto 64px; }
-.section h2 { text-align: center; margin-bottom: 32px; }
-.card { height: 100%; }
-.card h3 { margin-bottom: 12px; }
-.card p { color: #606266; line-height: 1.6; }
-.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-.step { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 18px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 16px; }
-.step-index { width: 40px; height: 40px; border-radius: 50%; background: #409eff; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
-.step-text { color: #303133; line-height: 1.5; }
-.cta { text-align: center; background: linear-gradient(135deg, #5c86ff, #7fb2ff); color: #fff; border-radius: 20px; padding: 56px 24px; }
-.cta p { max-width: 560px; margin: 12px auto 28px; font-size: 1.05rem; line-height: 1.6; }
-.cta-buttons { display: flex; justify-content: center; gap: 16px; }
-@media (max-width: 768px) {
-  .hero { padding: 0 12px; }
-  .hero h1 { font-size: 2.2rem; }
-  .hero-buttons, .cta-buttons { flex-direction: column; }
-  .home { padding: 32px 16px 60px; }
+.home {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f4f6fb;
+}
+
+.nav { display: none }
+
+.nav-item {
+  padding: 10px 26px;
+  border: 1px solid #d8dae2;
+  border-radius: 10px;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  border-color: #5c86ff;
+  color: #5c86ff;
+}
+
+.nav-item.active {
+  border-color: #2c64ff;
+  background: #2c64ff;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(44, 100, 255, 0.18);
+}
+
+.home-body {
+  flex: 1;
+  padding: 48px 40px 80px;
+  display: flex;
+  justify-content: center;
+}
+
+.content {
+  width: 100%;
+  max-width: 1080px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 36px 40px;
+  box-shadow: 0 16px 60px rgba(31, 47, 86, 0.08);
+}
+
+.content-header h2 {
+  font-size: 28px;
+  margin-bottom: 12px;
+  color: #1f2f56;
+}
+
+.description {
+  color: #61657a;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.highlight-card {
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid #e3e6f0;
+  background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+}
+
+.highlight-card h3 {
+  margin-bottom: 10px;
+  color: #2c64ff;
+  font-size: 18px;
+}
+
+.highlight-card p {
+  color: #555a6e;
+  line-height: 1.6;
+}
+
+.steps h3,
+.tips h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: #1f2f56;
+}
+
+.steps ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  background: #f4f6fb;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid #e2e6f4;
+}
+
+.steps .index {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #2c64ff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.steps .text {
+  color: #44495c;
+}
+
+.tips ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #5a5f74;
+  line-height: 1.6;
+}
+
+@media (max-width: 960px) {
+  .home-header {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 24px;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-header {
+    padding: 20px;
+  }
+
+  .home-body {
+    padding: 20px 16px 60px;
+  }
+
+  .content {
+    padding: 24px 20px;
+  }
+
+  .nav-item {
+    padding: 8px 18px;
+  }
 }
 </style>

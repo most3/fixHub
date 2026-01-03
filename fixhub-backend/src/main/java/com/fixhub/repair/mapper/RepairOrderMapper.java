@@ -23,16 +23,16 @@ public interface RepairOrderMapper {
     int insert(RepairOrder order);
 
     int updateAssignment(@Param("orderId") Long orderId,
-                         @Param("technicianId") Long technicianId,
-                         @Param("assignedAt") Instant assignedAt,
-                         @Param("status") String status);
+            @Param("technicianId") Long technicianId,
+            @Param("assignedAt") Instant assignedAt,
+            @Param("status") String status);
 
     int updateCompletion(@Param("orderId") Long orderId,
-                         @Param("resultDesc") String resultDesc,
-                         @Param("repairedAt") Instant repairedAt,
-                         @Param("status") String status);
+            @Param("resultDesc") String resultDesc,
+            @Param("repairedAt") Instant repairedAt,
+            @Param("status") String status);
 
     int updateClosure(@Param("orderId") Long orderId,
-                      @Param("closedAt") Instant closedAt,
-                      @Param("status") String status);
+            @Param("closedAt") Instant closedAt,
+            @Param("status") String status);
 }

@@ -18,6 +18,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '../api/auth'
 import { ElMessage } from 'element-plus'
+import useAuth from '../composables/useAuth'
 
 export default {
   setup () {
@@ -25,13 +26,16 @@ export default {
     const formRef = ref(null)
     const form = ref({ username: '', password: '' })
 
+    const { setSession } = useAuth()
+
     async function onSubmit () {
       try {
         const data = await login(form.value.username, form.value.password)
-        // 假定后端返回 token
-        if (data.token) localStorage.setItem('fixhub_token', data.token)
+        // 后端暂未返回 token，这里直接保存用户信息以保持登录状态
+        setSession(data)
         ElMessage.success('登录成功')
-        router.push('/dashboard')
+        // 登录后跳转到首页（并保留 token）
+        router.push({ path: '/', query: { section: 'report' } })
       } catch (err) {
         console.error(err)
         ElMessage.error(err.response?.data?.message || err.message || '登录失败')
