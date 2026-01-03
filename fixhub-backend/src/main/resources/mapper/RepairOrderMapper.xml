@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fixhub.repair.mapper.RepairOrderMapper">
+
+    <resultMap id="RepairOrderResultMap" type="com.fixhub.repair.model.RepairOrder">
+        <id property="id" column="id" />
+        <result property="orderNo" column="order_no" />
+        <result property="deviceName" column="device_name" />
+        <result property="location" column="location" />
+        <result property="description" column="description" />
+        <result property="imageUrl" column="image_url" />
+        <result property="status" column="status" javaType="com.fixhub.repair.model.RepairOrder$OrderStatus" />
+        <result property="resultDesc" column="result_desc" />
+        <result property="createdAt" column="created_at" />
+        <result property="assignedAt" column="assigned_at" />
+        <result property="repairedAt" column="repaired_at" />
+        <result property="closedAt" column="closed_at" />
+        <association property="reporter" column="reporter_id" javaType="com.fixhub.user.model.User"
+                     select="com.fixhub.user.mapper.UserMapper.selectById" />
+        <association property="technician" column="technician_id" javaType="com.fixhub.user.model.User"
+                     select="com.fixhub.user.mapper.UserMapper.selectById" />
+        <association property="device" column="device_id" javaType="com.fixhub.device.model.Device"
+                     select="com.fixhub.device.mapper.DeviceMapper.selectById" />
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, order_no, reporter_id, device_id, device_name, location, description,
+        image_url, status, technician_id, result_desc, created_at, assigned_at, repaired_at, closed_at
+    </sql>
+
+    <select id="selectById" parameterType="long" resultMap="RepairOrderResultMap">
+        SELECT <include refid="BaseColumns" />
+        FROM repair_orders
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="RepairOrderResultMap">
+        SELECT <include refid="BaseColumns" />
+        FROM repair_orders
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByReporterId" parameterType="long" resultMap="RepairOrderResultMap">
+        SELECT <include refid="BaseColumns" />
+        FROM repair_orders
+        WHERE reporter_id = #{reporterId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByTechnicianId" parameterType="long" resultMap="RepairOrderResultMap">
+        SELECT <include refid="BaseColumns" />
+        FROM repair_orders
+        WHERE technician_id = #{technicianId}
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.fixhub.repair.model.RepairOrder" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO repair_orders (
+            order_no, reporter_id, device_id, device_name, location, description,
+            image_url, status, technician_id, result_desc, created_at, assigned_at, repaired_at, closed_at
+        ) VALUES (
+            #{orderNo}, #{reporter.id,jdbcType=BIGINT}, #{device.id,jdbcType=BIGINT}, #{deviceName}, #{location}, #{description},
+            #{imageUrl}, #{status}, #{technician.id,jdbcType=BIGINT}, #{resultDesc}, #{createdAt}, #{assignedAt}, #{repairedAt}, #{closedAt}
+        )
+    </insert>
+
+    <update id="updateAssignment">
+        UPDATE repair_orders
+        SET technician_id = #{technicianId},
+            status = #{status},
+            assigned_at = #{assignedAt}
+        WHERE id = #{orderId}
+    </update>
+
+    <update id="updateCompletion">
+        UPDATE repair_orders
+        SET result_desc = #{resultDesc},
+            status = #{status},
+            repaired_at = #{repairedAt}
+        WHERE id = #{orderId}
+    </update>
+
+    <update id="updateClosure">
+        UPDATE repair_orders
+        SET status = #{status},
+            closed_at = #{closedAt}
+        WHERE id = #{orderId}
+    </update>
+
+</mapper>

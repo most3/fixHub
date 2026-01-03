@@ -8,8 +8,9 @@ import com.fixhub.user.dto.RegisterUserRequest;
 import com.fixhub.user.dto.UserResponse;
 import com.fixhub.user.model.User;
 import com.fixhub.user.model.enums.UserRole;
-import com.fixhub.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import com.fixhub.user.mapper.UserMapper;
+import java.time.Instant;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,17 +20,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
     /**
      * 用户服务构造函数
      *
-     * @param userRepository 用户仓库
+    * @param userMapper 用户 Mapper
      * @param passwordEncoder 密码编码器，建议使用 BCrypt
      */
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
+        this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -39,7 +40,7 @@ public class UserService {
     @Transactional
     public UserResponse register(RegisterUserRequest request) {
         String normalizedUsername = request.getUsername().trim();
-        if (userRepository.existsByUsernameIgnoreCase(normalizedUsername)) {
+        if (userMapper.existsByUsernameIgnoreCase(normalizedUsername)) {
             throw new DuplicateResourceException("用户名已存在");
         }
         User user = new User();
@@ -47,16 +48,19 @@ public class UserService {
         user.setDisplayName(request.getDisplayName());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole() : UserRole.REPORTER);
-        User saved = userRepository.save(user);
-        return UserResponse.fromEntity(saved);
+        user.setCreatedAt(Instant.now());
+        userMapper.insert(user);
+        return UserResponse.fromModel(userMapper.selectById(user.getId()));
     }
 
     /**
      * 校验用户名与密码是否匹配，成功后返回登录结果。
      */
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByUsernameIgnoreCase(request.getUsername())
-                .orElseThrow(() -> new UnauthorizedException("用户名或密码不正确"));
+        User user = userMapper.selectByUsernameIgnoreCase(request.getUsername());
+        if (user == null) {
+            throw new UnauthorizedException("用户名或密码不正确");
+        }
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new UnauthorizedException("用户名或密码不正确");
         }

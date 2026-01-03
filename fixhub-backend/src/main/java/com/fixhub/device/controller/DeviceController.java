@@ -1,7 +1,8 @@
 package com.fixhub.device.controller;
 
+import com.fixhub.device.mapper.DeviceMapper;
 import com.fixhub.device.model.Device;
-import com.fixhub.device.repository.DeviceRepository;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/devices")
 public class DeviceController {
 
-    private final DeviceRepository deviceRepository;
+    private final DeviceMapper deviceMapper;
 
-    public DeviceController(DeviceRepository deviceRepository) {
-        this.deviceRepository = deviceRepository;
+    public DeviceController(DeviceMapper deviceMapper) {
+        this.deviceMapper = deviceMapper;
     }
 
     /**
@@ -28,7 +29,7 @@ public class DeviceController {
      */
     @GetMapping
     public List<Device> getAllDevices() {
-        return deviceRepository.findAll();
+        return deviceMapper.selectAll();
     }
 
     /**
@@ -36,6 +37,16 @@ public class DeviceController {
      */
     @PostMapping
     public ResponseEntity<Device> createDevice(@RequestBody Device device) {
-        return ResponseEntity.ok(deviceRepository.save(device));
+        Instant now = Instant.now();
+        if (device.getId() == null) {
+            device.setCreatedAt(now);
+            device.setUpdatedAt(now);
+            deviceMapper.insert(device);
+        } else {
+            device.setUpdatedAt(now);
+            deviceMapper.update(device);
+        }
+        Device saved = deviceMapper.selectById(device.getId());
+        return ResponseEntity.ok(saved != null ? saved : device);
     }
 }

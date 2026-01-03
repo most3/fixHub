@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fixhub.repair.mapper.CommentMapper">
+
+    <resultMap id="CommentResultMap" type="com.fixhub.repair.model.Comment">
+        <id property="id" column="id" />
+        <result property="rating" column="rating" />
+        <result property="content" column="content" />
+        <result property="createdAt" column="created_at" />
+        <association property="order" column="order_id" javaType="com.fixhub.repair.model.RepairOrder"
+                     select="com.fixhub.repair.mapper.RepairOrderMapper.selectById" />
+        <association property="user" column="user_id" javaType="com.fixhub.user.model.User"
+                     select="com.fixhub.user.mapper.UserMapper.selectById" />
+    </resultMap>
+
+    <select id="selectById" parameterType="long" resultMap="CommentResultMap">
+        SELECT id, order_id, user_id, rating, content, created_at
+        FROM comments
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByOrderId" parameterType="long" resultMap="CommentResultMap">
+        SELECT id, order_id, user_id, rating, content, created_at
+        FROM comments
+        WHERE order_id = #{orderId}
+    </select>
+
+    <insert id="insert" parameterType="com.fixhub.repair.model.Comment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comments (order_id, user_id, rating, content, created_at)
+        VALUES (#{order.id,jdbcType=BIGINT}, #{user.id,jdbcType=BIGINT}, #{rating}, #{content}, #{createdAt})
+    </insert>
+
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fixhub.device.mapper.DeviceMapper">
+
+    <resultMap id="DeviceResultMap" type="com.fixhub.device.model.Device">
+        <id property="id" column="id" />
+        <result property="name" column="name" />
+        <result property="model" column="model" />
+        <result property="location" column="location" />
+        <result property="status" column="status" javaType="com.fixhub.device.model.Device$DeviceStatus" />
+        <result property="purchaseDate" column="purchase_date" />
+        <result property="description" column="description" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
+
+    <select id="selectById" parameterType="long" resultMap="DeviceResultMap">
+        SELECT id, name, model, location, status, purchase_date, description, created_at, updated_at
+        FROM devices
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="DeviceResultMap">
+        SELECT id, name, model, location, status, purchase_date, description, created_at, updated_at
+        FROM devices
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.fixhub.device.model.Device" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO devices (name, model, location, status, purchase_date, description, created_at, updated_at)
+        VALUES (#{name}, #{model}, #{location}, #{status}, #{purchaseDate}, #{description}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update" parameterType="com.fixhub.device.model.Device">
+        UPDATE devices
+        SET name = #{name},
+            model = #{model},
+            location = #{location},
+            status = #{status},
+            purchase_date = #{purchaseDate},
+            description = #{description},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

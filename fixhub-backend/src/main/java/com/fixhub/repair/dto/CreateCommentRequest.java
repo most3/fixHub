@@ -3,10 +3,14 @@ package com.fixhub.repair.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 创建工单评价的请求参数。
  */
+@Data
+@NoArgsConstructor
 public class CreateCommentRequest {
 
     @NotNull(message = "评分不能为空")
@@ -16,19 +20,4 @@ public class CreateCommentRequest {
 
     private String content;
 
-    public Integer getRating() {
-        return rating;
-    }
-
-    public void setRating(Integer rating) {
-        this.rating = rating;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
 }

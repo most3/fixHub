@@ -1,15 +1,8 @@
 package com.fixhub.repair.repository;
 
-import com.fixhub.repair.model.RepairOrder;
-import com.fixhub.repair.model.RepairOrder.OrderStatus;
-import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface RepairOrderRepository extends JpaRepository<RepairOrder, Long> {
-
-    List<RepairOrder> findByReporterId(Long reporterId);
-
-    List<RepairOrder> findByTechnicianId(Long technicianId);
-
-    List<RepairOrder> findByStatus(OrderStatus status);
+/**
+ * 占位接口：MyBatis 迁移完成后不再使用。
+ */
+@Deprecated
+public interface RepairOrderRepository {
 }

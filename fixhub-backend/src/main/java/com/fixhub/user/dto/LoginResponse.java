@@ -1,10 +1,14 @@
 package com.fixhub.user.dto;
 
 import com.fixhub.user.model.enums.UserRole;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 登录成功后返回给前端的简要信息。
  */
+@Data
+@NoArgsConstructor
 public class LoginResponse {
 
     private Long userId;
@@ -21,35 +25,4 @@ public class LoginResponse {
         return response;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public UserRole getRole() {
-        return role;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }

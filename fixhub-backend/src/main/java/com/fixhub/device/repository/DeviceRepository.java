@@ -1,7 +1,8 @@
 package com.fixhub.device.repository;
 
-import com.fixhub.device.model.Device;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface DeviceRepository extends JpaRepository<Device, Long> {
+/**
+ * 占位接口：原 JPA 仓库已停用，建议删除相关引用。
+ */
+@Deprecated
+public interface DeviceRepository {
 }

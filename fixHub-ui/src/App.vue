@@ -4,6 +4,8 @@
       <div class="header-wrap">
         <div class="logo">FixHub</div>
         <div class="nav">
+          <el-button type="text" @click="go('/')">首页</el-button>
+          <el-button type="text" v-if="isAuthenticated" @click="go('/dashboard')">仪表盘</el-button>
           <el-button type="text" v-if="!isAuthenticated" @click="go('/login')">登录</el-button>
           <el-button type="text" v-if="!isAuthenticated" @click="go('/register')">注册</el-button>
           <el-button type="text" v-if="isAuthenticated" @click="logout">退出</el-button>
