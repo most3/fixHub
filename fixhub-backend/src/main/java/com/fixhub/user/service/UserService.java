@@ -47,6 +47,26 @@ public class UserService {
         user.setUsername(normalizedUsername);
         user.setDisplayName(request.getDisplayName());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        // 普通用户注册强制为 REPORTER
+        user.setRole(UserRole.REPORTER);
+        user.setCreatedAt(Instant.now());
+        userMapper.insert(user);
+        return UserResponse.fromModel(userMapper.selectById(user.getId()));
+    }
+
+    /**
+     * 管理员创建用户（可指定角色）
+     */
+    @Transactional
+    public UserResponse createUser(RegisterUserRequest request) {
+        String normalizedUsername = request.getUsername().trim();
+        if (userMapper.existsByUsernameIgnoreCase(normalizedUsername)) {
+            throw new DuplicateResourceException("用户名已存在");
+        }
+        User user = new User();
+        user.setUsername(normalizedUsername);
+        user.setDisplayName(request.getDisplayName());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole() != null ? request.getRole() : UserRole.REPORTER);
         user.setCreatedAt(Instant.now());
         userMapper.insert(user);
@@ -57,7 +77,8 @@ public class UserService {
      * 校验用户名与密码是否匹配，成功后返回登录结果。
      */
     public LoginResponse login(LoginRequest request) {
-        User user = userMapper.selectByUsernameIgnoreCase(request.getUsername());
+        String normalizedUsername = request.getUsername() != null ? request.getUsername().trim() : null;
+        User user = userMapper.selectByUsernameIgnoreCase(normalizedUsername);
         if (user == null) {
             throw new UnauthorizedException("用户名或密码不正确");
         }

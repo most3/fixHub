@@ -33,3 +33,4 @@ com\fixhub\user\dto\LoginRequest.class
 com\fixhub\repair\controller\RepairController.class
 com\fixhub\FixHubApplication.class
 com\fixhub\device\model\Device$DeviceStatus.class
+com\fixhub\user\controller\UserController.class

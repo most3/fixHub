@@ -1,3 +1,4 @@
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\controller\UserController.java
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\device\mapper\DeviceMapper.java
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\dto\RegisterUserRequest.java
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\repair\repository\CommentRepository.java
@@ -22,6 +23,7 @@ D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\statistics\controlle
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\repair\repository\RepairOrderRepository.java
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\device\controller\DeviceController.java
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\repair\service\RepairService.java
+D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\tool\AdminSeeder.java
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\statistics\dto\DashboardStats.java
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\service\UserService.java
 D:\CodeLearn\fixHub\fixhub-backend\src\main\java\com\fixhub\user\controller\AuthController.java

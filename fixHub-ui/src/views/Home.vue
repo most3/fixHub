@@ -194,10 +194,43 @@
           <el-card shadow="hover" class="manage-card">人员管理</el-card>
         </el-col>
         <el-col :span="8">
-          <el-card shadow="hover" class="manage-card">账号生成</el-card>
+            <el-card shadow="hover" class="manage-card" @click="handleCreateUser">账号生成</el-card>
         </el-col>
       </el-row>
     </div>
+
+      <!-- 访客 / 未登录用户展示（避免空白页面） -->
+      <div v-else class="role-dashboard guest-dashboard">
+        <el-row :gutter="20" class="mb-4">
+          <el-col :span="24">
+            <el-card class="card">
+              <h3>欢迎使用校园设备报修平台</h3>
+              <p>请登录或注册以提交报修或查看工单；管理员 / 维修工请使用分配账号登录。</p>
+              <div style="margin-top:12px">
+                <el-button type="primary" @click="$router.push('/login')">登录</el-button>
+                <el-button type="default" @click="$router.push('/register')" style="margin-left:8px">注册</el-button>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-card class="box-card">
+              <template #header><span>平台简介</span></template>
+              <p>本平台为师生提供便捷的设备报修通道；维修工和管理员账号由学校或系统管理员统一下发与管理。</p>
+            </el-card>
+          </el-col>
+          <el-col :span="12">
+            <el-card class="box-card">
+              <template #header><span>常见问题</span></template>
+              <ul class="faq-list">
+                <li>如何获取维修工账号？联系管理员由其创建并下发账号。</li>
+                <li>忘记密码怎么办？使用找回密码流程。</li>
+              </ul>
+            </el-card>
+          </el-col>
+        </el-row>
+      </div>
 
     <!-- 弹窗：快速报修 -->
     <el-dialog v-model="repairDialogVisible" title="提交报修单" width="500px">
@@ -234,6 +267,33 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 弹窗：创建用户 -->
+    <el-dialog v-model="createUserDialogVisible" title="创建用户" width="500px">
+      <el-form :model="createUserForm" label-width="80px">
+        <el-form-item label="用户名">
+          <el-input v-model="createUserForm.username" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="createUserForm.password" type="password" placeholder="请输入密码" />
+        </el-form-item>
+        <el-form-item label="显示名">
+          <el-input v-model="createUserForm.displayName" placeholder="请输入显示名" />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="createUserForm.role" placeholder="请选择角色">
+            <el-option label="维修工" value="TECHNICIAN" />
+            <el-option label="管理员" value="ADMIN" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="createUserDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitCreateUser">创建</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -244,6 +304,7 @@ import { Tools, ArrowRight, Search } from '@element-plus/icons-vue'
 import useAuth from '../composables/useAuth'
 import { createOrder, getMyOrders, getAssignedOrders, getAllOrders, assignOrder, completeOrder } from '../api/repair'
 import { getDashboardStats } from '../api/stats'
+import { createUser } from '../api/user'
 
 const { user } = useAuth()
 const loading = ref(false)
@@ -266,6 +327,30 @@ const repairForm = ref({ deviceName: '', location: '', description: '' })
 const completeDialogVisible = ref(false)
 const currentOrder = ref(null)
 const completeForm = ref({ resultDesc: '' })
+
+// 创建用户表单
+const createUserDialogVisible = ref(false)
+const createUserForm = ref({ username: '', password: '', displayName: '', role: 'TECHNICIAN' })
+
+function handleCreateUser() {
+  createUserForm.value = { username: '', password: '', displayName: '', role: 'TECHNICIAN' }
+  createUserDialogVisible.value = true
+}
+
+async function submitCreateUser() {
+  if (!createUserForm.value.username || !createUserForm.value.password) {
+    ElMessage.warning('请填写用户名和密码')
+    return
+  }
+  try {
+    await createUser(createUserForm.value)
+    ElMessage.success('用户创建成功')
+    createUserDialogVisible.value = false
+  } catch (e) {
+    console.error(e)
+    ElMessage.error(e.humanMessage || e.response?.data?.message || e.message || '创建失败')
+  }
+}
 
 // 初始化加载
 onMounted(() => {

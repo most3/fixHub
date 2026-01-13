@@ -1,13 +1,52 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FixHub UI</title>
-    <script type="module" crossorigin src="/assets/index-CpQN3m5i.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-D0Zjfd45.css">
-  </head>
-  <body>
-    <div id="app"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FixHub 登录 / 注册</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>FixHub</h1>
+
+    <div class="tabs">
+      <button id="tab-login" class="active">登录</button>
+      <button id="tab-register">注册</button>
+    </div>
+
+    <div id="msg" class="msg"></div>
+
+    <form id="login-form" class="form">
+      <label>用户名
+        <input name="username" required />
+      </label>
+      <label>密码
+        <input name="password" type="password" required />
+      </label>
+      <button type="submit">登录</button>
+    </form>
+
+    <form id="register-form" class="form hidden">
+      <label>用户名
+        <input name="username" required />
+      </label>
+      <label>密码
+        <input name="password" type="password" required />
+      </label>
+      <label>显示名
+        <input name="displayName" />
+      </label>
+      <label>联系电话
+        <input name="phone" />
+      </label>
+      <button type="submit">注册</button>
+    </form>
+
+    <h3 style="margin-top:14px">接口返回（用于调试）</h3>
+    <pre id="response" class="response hidden"></pre>
+  </div>
+
+  <script src="app.js"></script>
+</body>
 </html>
