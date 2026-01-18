@@ -1,13 +1,12 @@
 package com.fixhub.user.controller;
 
+import com.fixhub.common.response.Result;
 import com.fixhub.user.dto.LoginRequest;
 import com.fixhub.user.dto.LoginResponse;
 import com.fixhub.user.dto.RegisterUserRequest;
 import com.fixhub.user.dto.UserResponse;
 import com.fixhub.user.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,17 +31,17 @@ public class AuthController {
      * 用户注册接口。
      */
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
+    public Result<UserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
         UserResponse response = userService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return Result.success(response);
     }
 
     /**
      * 用户登录接口。
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = userService.login(request);
-        return ResponseEntity.ok(response);
+        return Result.success(response);
     }
 }

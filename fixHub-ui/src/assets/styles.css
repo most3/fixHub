@@ -1,2 +1,17 @@
-body{font-family:Inter,Segoe UI,Roboto, "Helvetica Neue", Arial, sans-serif;background:#f5f7fb;margin:0}
-.card{background:#fff}
+body{font-family:Inter,Segoe UI,Roboto, "Helvetica Neue", Arial, sans-serif;background:#f5f7fb;margin:0;color:#1f2937}
+.card{background:#fff;border-radius:16px}
+.page{max-width:1200px;margin:0 auto;padding:24px}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px}
+.page-header h2{margin:0;font-size:24px}
+.page-header p{margin:6px 0 0;color:#6b7280}
+.header-actions{display:flex;gap:12px;flex-wrap:wrap}
+.mb-4{margin-bottom:20px}
+.mt-4{margin-top:20px}
+.stat-card{padding:16px;text-align:center;border-radius:16px;background:#fff}
+.stat-value{font-size:26px;font-weight:700}
+.stat-label{color:#6b7280;margin-top:6px}
+.stat-card.red .stat-value{color:#f56c6c}
+.stat-card.yellow .stat-value{color:#e6a23c}
+.stat-card.green .stat-value{color:#67c23a}
+.card-header{display:flex;justify-content:space-between;align-items:center}
+.filter-bar .el-form-item{margin-bottom:10px}

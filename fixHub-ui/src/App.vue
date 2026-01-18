@@ -8,7 +8,7 @@
             :key="item.id"
             class="main-nav-item"
             :class="{ active: item.id === currentSection }"
-            @click="goSection(item.id)"
+            @click="goSection(item)"
           >
             {{ item.label }}
           </button>
@@ -55,30 +55,48 @@ export default {
     // use centralized auth composable so header responds to login/logout across tabs
     const { isAuthenticated, clearToken, user } = useAuth()
 
-    const mainSections = [
-      { id: 'report', label: '报修' },
-      { id: 'tracking', label: '状态跟踪' },
-      { id: 'device', label: '设备' },
-      { id: 'stats', label: '数据统计' }
-    ]
+    const role = computed(() => user.value?.role || 'GUEST')
+
+    const mainSections = computed(() => {
+      const base = [
+        { id: 'home', label: '首页', path: '/' }
+      ]
+      const reporter = [
+        { id: 'report', label: '提交报修', path: '/report' },
+        { id: 'tracking', label: '状态跟踪', path: '/tracking' }
+      ]
+      const technician = [
+        { id: 'tasks', label: '维修工单', path: '/tasks' },
+        { id: 'tracking', label: '状态跟踪', path: '/tracking' }
+      ]
+      const admin = [
+        { id: 'admin-orders', label: '派单管理', path: '/admin-orders' },
+        { id: 'devices', label: '设备管理', path: '/devices' },
+        { id: 'staff', label: '人员管理', path: '/staff' },
+        { id: 'stats', label: '数据看板', path: '/stats' }
+      ]
+      if (role.value === 'REPORTER') return [...base, ...reporter]
+      if (role.value === 'TECHNICIAN') return [...base, ...technician]
+      if (role.value === 'ADMIN') return [...base, ...admin]
+      return [...base, ...reporter]
+    })
 
     const currentSection = computed(() => {
-      // reflect route query so header can highlight active when on home
-      const q = router.currentRoute.value.query.section
-      return q || ''
+      const path = router.currentRoute.value.path
+      const matched = mainSections.value.find(item => item.path === path)
+      return matched?.id || 'home'
     })
 
     function go(path) { router.push(path) }
     function logout () { clearToken(); router.push('/login') }
 
-    function goSection (id) {
-      // navigate to home with section query so Home.vue can pick it up
-      router.push({ path: '/', query: { section: id } })
+    function goSection (item) {
+      router.push(item.path)
     }
 
     const userDisplay = computed(() => user.value?.displayName || user.value?.username || '用户')
 
-    return { go, logout, isAuthenticated, mainSections, goSection, currentSection, user, userDisplay }
+    return { go, logout, isAuthenticated, mainSections, goSection, currentSection, user, userDisplay, role }
   }
 }
 </script>

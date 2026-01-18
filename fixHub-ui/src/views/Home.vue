@@ -188,10 +188,10 @@
       <!-- 底部：快捷管理 -->
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-card shadow="hover" class="manage-card">设备管理</el-card>
+          <el-card shadow="hover" class="manage-card" @click="goDevices">设备管理</el-card>
         </el-col>
         <el-col :span="8">
-          <el-card shadow="hover" class="manage-card">人员管理</el-card>
+          <el-card shadow="hover" class="manage-card" @click="goStaff">人员管理</el-card>
         </el-col>
         <el-col :span="8">
             <el-card shadow="hover" class="manage-card" @click="handleCreateUser">账号生成</el-card>
@@ -241,8 +241,27 @@
         <el-form-item label="设备位置">
           <el-input v-model="repairForm.location" placeholder="请输入设备位置" />
         </el-form-item>
+        <el-form-item label="优先级">
+          <el-select v-model="repairForm.priority" placeholder="请选择优先级">
+            <el-option label="紧急" value="HIGH" />
+            <el-option label="普通" value="MEDIUM" />
+            <el-option label="低" value="LOW" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="联系电话">
+          <el-input v-model="repairForm.phone" placeholder="便于维修工联系" />
+        </el-form-item>
         <el-form-item label="故障描述">
           <el-input v-model="repairForm.description" type="textarea" placeholder="请详细描述故障情况" />
+        </el-form-item>
+        <el-form-item label="上传图片">
+          <el-upload
+            action="#"
+            list-type="picture-card"
+            :auto-upload="false"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -299,14 +318,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Tools, ArrowRight, Search } from '@element-plus/icons-vue'
+import { Tools, ArrowRight, Search, Plus } from '@element-plus/icons-vue'
 import useAuth from '../composables/useAuth'
 import { createOrder, getMyOrders, getAssignedOrders, getAllOrders, assignOrder, completeOrder } from '../api/repair'
 import { getDashboardStats } from '../api/stats'
 import { createUser } from '../api/user'
 
 const { user } = useAuth()
+const router = useRouter()
 const loading = ref(false)
 
 // 角色判断
@@ -322,7 +343,7 @@ const stats = ref({})
 
 // 表单
 const repairDialogVisible = ref(false)
-const repairForm = ref({ deviceName: '', location: '', description: '' })
+const repairForm = ref({ deviceName: '', location: '', description: '', priority: 'MEDIUM', phone: '' })
 
 const completeDialogVisible = ref(false)
 const currentOrder = ref(null)
@@ -410,10 +431,15 @@ function handleQuickRepair() {
 
 async function submitRepair() {
   try {
-    await createOrder(user.value.id, repairForm.value)
+    const payload = {
+      deviceName: repairForm.value.deviceName,
+      location: repairForm.value.location,
+      description: repairForm.value.description
+    }
+    await createOrder(user.value.id, payload)
     ElMessage.success('报修提交成功')
     repairDialogVisible.value = false
-    repairForm.value = { deviceName: '', location: '', description: '' }
+    repairForm.value = { deviceName: '', location: '', description: '', priority: 'MEDIUM', phone: '' }
     fetchMyOrders()
   } catch (e) {
     ElMessage.error('提交失败')
@@ -421,7 +447,7 @@ async function submitRepair() {
 }
 
 function handleDeviceQuery() {
-  ElMessage.info('功能开发中...')
+  router.push('/devices')
 }
 
 // 维修工操作
@@ -455,7 +481,7 @@ async function submitComplete() {
 
 // 管理员操作
 function handleAssign(order) {
-  ElMessage.info('请使用维修工账号登录演示接单，或后续完善派单弹窗')
+  router.push('/admin-orders')
 }
 
 // 工具函数
@@ -485,8 +511,11 @@ function getStatusType(status) {
 }
 
 function viewDetail(row) {
-  ElMessage.info(`查看详情: ${row.orderNo}`)
+  router.push({ path: '/tracking', query: { orderNo: row.orderNo } })
 }
+
+function goDevices() { router.push('/devices') }
+function goStaff() { router.push('/staff') }
 
 // 刷新待接单
 async function fetchPendingOrders() {

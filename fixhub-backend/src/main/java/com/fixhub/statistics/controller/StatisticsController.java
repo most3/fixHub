@@ -1,8 +1,8 @@
 package com.fixhub.statistics.controller;
 
+import com.fixhub.common.response.Result;
 import com.fixhub.statistics.dto.DashboardStats;
 import com.fixhub.statistics.service.StatisticsService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +24,7 @@ public class StatisticsController {
      * 获取仪表盘所需的统计指标。
      */
     @GetMapping("/dashboard")
-    public ResponseEntity<DashboardStats> getDashboardStats() {
-        return ResponseEntity.ok(statisticsService.getDashboardStats());
+    public Result<DashboardStats> getDashboardStats() {
+        return Result.success(statisticsService.getDashboardStats());
     }
 }
