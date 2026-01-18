@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FixHub 接口文档（中文引导）</title>
+  <style>
+    body{font-family:Helvetica,Arial,sans-serif;margin:0;padding:0}
+    header{background:#2d8cf0;color:#fff;padding:20px}
+    .container{max-width:1200px;margin:20px auto;padding:16px}
+    .note{background:#f8f8f8;border-left:4px solid #2d8cf0;padding:12px;margin-bottom:12px}
+    .frame{width:100%;height:80vh;border:1px solid #ddd}
+    a.button{display:inline-block;background:#2d8cf0;color:#fff;padding:8px 12px;border-radius:4px;text-decoration:none}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FixHub API 文档</h1>
+    <div>说明：下方嵌入了 Swagger UI，页面说明与接口注释以中文为主。</div>
+  </header>
+  <div class="container">
+    <div class="note">
+      - 如果页面未加载或显示空白，请点击“打开独立页面”以在新标签页中打开 Swagger UI。
+      <br/>- Swagger UI 地址： <a href="/swagger-ui/index.html" target="_blank" class="button">打开 Swagger UI</a>
+    </div>
+
+    <iframe class="frame" src="/swagger-ui/index.html" title="Swagger UI"></iframe>
+
+    <section style="margin-top:12px">
+      <h3>快速提示（中文）</h3>
+      <ul>
+        <li>成功响应遵循统一结构：{ code: 200, message: "success", data: ... }</li>
+        <li>错误响应包含中文 message 字段，前端会显示友好提示。</li>
+        <li>如需本地化 Swagger UI 的界面文字（按钮、占位等），请在仓库中选择是否替换默认静态资源。</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

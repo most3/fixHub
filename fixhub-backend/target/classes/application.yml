@@ -20,3 +20,16 @@ logging:
     org:
       hibernate:
         SQL: DEBUG
+
+
+# Springdoc / Swagger UI 配置，改善文档展示与可用性
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    display-request-duration: true
+    operationsSorter: alpha
+    tagsSorter: alpha
+    defaultModelsExpandDepth: -1
+    tryItOutEnabled: true
